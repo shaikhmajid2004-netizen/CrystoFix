@@ -6,3 +6,69 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum UserRole {
+  CUSTOMER
+  GARAGE_OWNER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id    String   @id @default(cuid())
+  name  String
+  email String   @unique
+  phone String?  @unique
+  role  UserRole @default(CUSTOMER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicles Vehicle[]
+  bookings Booking[]
+  garages  Garage[]
+}
+
+model Vehicle {
+  id           String  @id @default(cuid())
+  ownerId      String
+  brand        String
+  model        String
+  registration String  @unique
+  fuelType     String?
+
+  owner User @relation(fields: [ownerId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Garage {
+  id       String  @id @default(cuid())
+  ownerId  String
+  name     String
+  address  String
+  city     String
+  verified Boolean @default(false)
+
+  owner User @relation(fields: [ownerId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  customerId  String
+  serviceName String
+  status      BookingStatus @default(PENDING)
+
+  customer User @relation(fields: [customerId], references: [id])
+
+  createdAt DateTime @default(now())
+}
